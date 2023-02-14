@@ -1,0 +1,15 @@
+data:
+  templates:
+    - "[filewords], [name]"
+  placeholder_token: "foo"
+trainer:
+  accelerator: auto
+model:
+  embedding_list:
+    - "foo"
+  embedding_length: 16
+  embedding_init: "*"
+  fixed_image_log_params:
+    seed: 87
+    negative_prompt: "worst quality"
+  log_image_every_nsteps: 200
