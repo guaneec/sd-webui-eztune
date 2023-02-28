@@ -118,6 +118,7 @@ class StableDiffusionTuner(pl.LightningModule):
         model_lr: float = 1e-5,
         model_unfrozen_regex: str = r"2.to_[kv]",
         fixed_image_log_params: Optional[dict],
+        optimizer_params: Optional[dict],
         log_random_image: bool = True,
         log_image_every_nsteps: int = 0,
         export_every_nsteps: int = 0,
@@ -148,6 +149,7 @@ class StableDiffusionTuner(pl.LightningModule):
         self.model_lr = model_lr
         self.log_image_every_nsteps = log_image_every_nsteps
         self.export_every_nsteps = export_every_nsteps
+        self.optimizer_params = optimizer_params
         wandb.init(project="tuning")
 
     def _gen_image(self, **kwargs):
@@ -271,7 +273,7 @@ class StableDiffusionTuner(pl.LightningModule):
         # return torch.optim.AdamW(param_groups, weight_decay=0.0)
         from dadaptation import DAdaptAdam
 
-        return DAdaptAdam(param_groups)
+        return DAdaptAdam(param_groups, **(self.optimizer_params or {}))
 
 
 class EZCLI(LightningCLI):
