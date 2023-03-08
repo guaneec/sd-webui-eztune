@@ -9,6 +9,7 @@ from pytorch_lightning.cli import LightningCLI
 from typing import List, Optional
 import os
 import wandb
+import dadaptation
 
 
 class DataModule(pl.LightningDataModule):
@@ -118,7 +119,9 @@ class StableDiffusionTuner(pl.LightningModule):
         model_lr: float = 1e-5,
         model_unfrozen_regex: str = r"2.to_[kv]",
         fixed_image_log_params: Optional[dict],
-        optimizer_params: Optional[dict],
+        optimizer_params: Optional[dict] = None,
+        optimizer_params_embeds: Optional[dict] = None,
+        optimizer_params_weights: Optional[dict] = None,
         log_random_image: bool = True,
         log_image_every_nsteps: int = 0,
         export_every_nsteps: int = 0,
@@ -150,6 +153,8 @@ class StableDiffusionTuner(pl.LightningModule):
         self.log_image_every_nsteps = log_image_every_nsteps
         self.export_every_nsteps = export_every_nsteps
         self.optimizer_params = optimizer_params
+        self.optimizer_params_embeds = optimizer_params_embeds or {}
+        self.optimizer_params_weights = optimizer_params_weights or {}
         wandb.init(project="tuning")
 
     def _gen_image(self, **kwargs):
@@ -256,24 +261,20 @@ class StableDiffusionTuner(pl.LightningModule):
         return loss
 
     def configure_optimizers(self):
-        self.embedding_lr = self.model_lr = 1.0
         param_groups = []
         if self.embeds:
             param_groups.append(
-                dict(params=list(self.embeds.values()), lr=self.embedding_lr)
+                dict(params=list(self.embeds.values()), **self.optimizer_params_embeds)
             )
         if self.model_weights:
             param_groups.append(
                 dict(
                     params=list(self.model_weights.parameters()),
-                    lr=self.model_lr,
-                    eps=1e-5,
+                    **self.optimizer_params_weights
                 )
             )
-        # return torch.optim.AdamW(param_groups, weight_decay=0.0)
-        from dadaptation import DAdaptAdam
 
-        return DAdaptAdam(param_groups, **(self.optimizer_params or {}))
+        return self.optimizer(param_groups, **(self.optimizer_params or {}))
 
 
 class EZCLI(LightningCLI):

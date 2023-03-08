@@ -13,3 +13,8 @@ model:
     seed: 87
     negative_prompt: "worst quality"
   log_image_every_nsteps: 200
+  optimizer_params_weights:
+    lr: 1e-4
+  optimizer_params_embeds:
+    lr: 1e-5
+optimizer: AdamW
