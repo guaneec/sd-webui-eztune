@@ -274,7 +274,7 @@ class StableDiffusionTuner(pl.LightningModule):
                 )
             )
 
-        return self.optimizer(param_groups, **(self.optimizer_params or {}))
+        return torch.optim.AdamW(param_groups, **(self.optimizer_params or {}))
 
 
 class EZCLI(LightningCLI):
