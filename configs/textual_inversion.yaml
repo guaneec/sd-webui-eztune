@@ -17,4 +17,4 @@ model:
     lr: 1e-4
   optimizer_params_embeds:
     lr: 1e-5
-optimizer: AdamW
+
